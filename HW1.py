@@ -2,7 +2,7 @@ import numpy as np
 
 # Udacity <Artificial Intelligence for Robotics>
 # Localization - Programming assignment
-# 
+# ss
 colors = [['r','g','g','r','r'],['r','r','g','r','r'],
             ['r','r','g','g','r'],['r','r','r','r','r']]
 measurements = ['g','g','g','g','g']
