@@ -8,6 +8,14 @@ pi = 3.1415
 
 # print(landmarks[2][1])
 
+
+def resampling(w):
+    norm_coeff = sum(w)
+    w_array = np.array(w)
+    w_norm = w_array/norm_coeff
+    
+    return random.choices(range(len(w)),weights=w_norm,k=len(w))
+
 class robot:
     def __init__(self):
         self.x = random.random() * world_size
@@ -68,6 +76,7 @@ class robot:
 
         return prob
 
+
 myrobot = robot()
 myrobot.move(0.1,5)
 Z = myrobot.sense()
@@ -86,4 +95,13 @@ for i in range(N):
 for i in range(N):
     w.append(p[i].measurement_prob(Z))
 
-print(w)
+p3 = []
+resample = resampling(w)
+
+for i in range(N):
+    p3.append(p[resample[i]])
+
+p = p3
+
+for i in range(N):
+    print(p[i].x)
