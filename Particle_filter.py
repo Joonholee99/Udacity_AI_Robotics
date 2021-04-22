@@ -16,6 +16,15 @@ def resampling(w):
     
     return random.choices(range(len(w)),weights=w_norm,k=len(w))
 
+def error(r,p):
+    err = 0
+    for i in range(1000):
+        dx = (p[i].x - r.x + (world_size/2.0)) % world_size - (world_size/2.0)
+        dy = (p[i].y - r.y + (world_size/2.0)) % world_size - (world_size/2.0)
+        
+        err += math.sqrt(dx**2 + dy**2)
+
+    return err/1000
 class robot:
     def __init__(self):
         self.x = random.random() * world_size
@@ -59,9 +68,15 @@ class robot:
         turn += random.gauss(0,self.turn_noise)
         forward += random.gauss(0,self.forward_noise)
 
-        self.orient = (self.orient+turn)%(2*pi)
-        self.x = (self.x + forward*math.cos(self.orient))%world_size
-        self.y = (self.y + forward*math.sin(self.orient))%world_size
+        orient = (self.orient+turn)%(2*pi)
+        x = (self.x + forward*math.cos(self.orient))%world_size
+        y = (self.y + forward*math.sin(self.orient))%world_size
+
+        res = robot()
+        res.set(x,y,orient)
+        res.set_noise(self.forward_noise, self.turn_noise, self.sense_noise)
+
+        return res
 
     def Gaussian(self,mu, sigma, x):
 
@@ -76,32 +91,49 @@ class robot:
 
         return prob
 
-
 myrobot = robot()
-myrobot.move(0.1,5)
-Z = myrobot.sense()
+p = []
 
 N = 1000
-p = []
-w = []
 for i in range(N):
     x = robot()
     x.set_noise(0.05,0.05,5.0)
     p.append(x)
+print(error(myrobot,p))
+for j in range(10):
+    
+    myrobot = myrobot.move(0.1,5)
+    Z = myrobot.sense()
 
-for i in range(N):
-    p[i].move(0.1,5)
+    p2 =[]
+    for i in range(N):
+        p2.append(p[i].move(0.1,5))
 
-for i in range(N):
-    w.append(p[i].measurement_prob(Z))
+    p = p2
 
-p3 = []
-resample = resampling(w)
+    w = []
 
-for i in range(N):
-    p3.append(p[resample[i]])
+    for i in range(N):
+        w.append(p[i].measurement_prob(Z))
 
-p = p3
+    p3 = []
+    resample = resampling(w)
 
-for i in range(N):
-    print(p[i].x)
+    for i in range(N):
+        p3.append(p[resample[i]])
+
+    p = p3
+    print(error(myrobot,p))
+# print("--------------------------------------\n")
+# for i in range(N):
+    
+    
+#     print(p[i].x)
+
+# print("--------------------------------------\n")
+# for i in range(N):
+    
+    
+#     print(p[i].y)
+
+    
