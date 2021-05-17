@@ -1,2 +1,2 @@
-,x,y)
-        # print(polic
+x,y)
+                            # print(delta_name[k])
