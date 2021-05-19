@@ -8,7 +8,7 @@ delta_name = ['^','<','V','>']
 
 def stochastic_value(grid, goal, cost_step, collision_cost, success_prob):
     failure_prob = (1 - success_prob)/2
-    value = [[1000 for col in range(len(grid[0]))] for row in range(len(grid))]
+    value = [[collision_cost for col in range(len(grid[0]))] for row in range(len(grid))]
     policy = [['' for col in range(len(grid[0]))] for row in range(len(grid))]
 
     change = True
@@ -44,7 +44,9 @@ def stochastic_value(grid, goal, cost_step, collision_cost, success_prob):
                                     else:
                                         value_ = value[x2][y2] 
 
-                                    value2 += stoch_move[1][i] * value_ + cost_step
+                                    value2 += stoch_move[1][i] * value_
+
+                            value2 += cost_step
 
                             
                             if value2 < value[x][y]:
@@ -53,9 +55,9 @@ def stochastic_value(grid, goal, cost_step, collision_cost, success_prob):
                                 policy[x][y] = delta_name[k]
                                 change = True 
 
-                                for row in range(len(value)):
-                                    print(policy[row])
-                                print('------------------------------------')
+                                # for row in range(len(value)):
+                                #     print(policy[row])
+                                # print('------------------------------------')
     
     return value, policy
                         
@@ -63,7 +65,7 @@ def stochastic_value(grid, goal, cost_step, collision_cost, success_prob):
 
 grid = [[0, 0, 0, 0],
         [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [0, 0, 0, 0], 
         [0, 1, 1, 0]]
 
 goal = [0,len(grid[0])-1]
