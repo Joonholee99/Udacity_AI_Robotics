@@ -3,6 +3,119 @@ import math
 import random
 import copy
 
+
+class Plan:
+    def __init__(self, grid, init, goal, cost=1):
+        self.cost = cost
+        self.grid = grid
+        self.init = init
+        self.goal = goal
+        self.make_heuristic(grid, goal, self.cost)
+        self.path = []
+        self.spath = []
+
+    def make_heuristic(self, grid, goal, cost):
+        heuristic = []
+        for i in range(len(grid)):
+            r_heuristic = []
+            for j in range(len(grid[0])):
+                step = abs(goal[0] - i) + abs(goal[1] - j)
+                r_heuristic.append(step)
+            
+            heuristic.append(r_heuristic)
+
+        return heuristic
+
+    def astar(self):
+        if self.heuristic == []:
+            raise ValueError("Heuristic is empty!!")
+
+        delta = [[-1,0],
+                [1,0],
+                [0,-1],
+                [0,1]]
+        closed = [[0 for row in range(len(self.grid[0]))] for col in range(len(self.grid[0]))]
+        action = [[0 for row in range(len(self.grid[0]))] for col in range(len(self.grid[0]))]
+        closed[self.init[0]][self.init[1]] = 1
+        x = self.init[0]
+        y = self.init[1]
+        h = self.heuristic[x][y]
+        g = 0
+        f = g+h
+
+        open = [[f,g,h,x,y]]
+        found = False
+        resign = False
+        count = 0
+
+        while found is False and resign is False:
+            if len(open) == 0:
+                resign = True
+                print("Searching Done")
+            else:
+                open.sort()
+                open.reverse()
+                next = open.pop()
+                x = next[3]
+                y = next[4]
+                g = next[1]
+                
+                for i in range(len(delta)):
+                    x2 = x + delta[0]
+                    y2 = y + delta[1]
+
+                    if x2 >= 0 and x2 < len(self.grid) and y2 >= 0 and y2 < len(self.grid[0]):
+                        if closed[x2][y2] == 0 and self.grid[x2][y2] == 0:
+                            h2 = self.heuristic[x2][y2]
+                            g2 = g + self.cost
+                            f2 = g2 + h2
+                            closed[x2][y2] = 1
+                            action[x2][y2] = i
+
+                            open.append([f2,g2,h2,x2,y2])
+                count += 1
+
+        invpath = []
+        invpath.append([self.goal[0],self.goal[1]])
+        x = self.goal[0]
+        y = self.goal[1]
+        while x != self.init[0] and y != self.init[1]:
+            x2 = x - action[x][y]
+            y2 = y - action[x][y]
+            invpath.append([x2,y2])
+
+            x = x2
+            y = y2
+        
+        self.path = []
+        for i in range(len(invpath)):
+            self.path.append(invpath[len(invpath) - 1 - i])
+
+    def smooth(self, weight_data = 0.1, weight_smooth = 0/1, tolerance = 0.00001):
+        error = tolerance
+        self.spath = copy.deepcopy(self.path)
+        while error >= tolerance:
+            error = 0
+            for i in range(1,len(self.path)):
+                for j in range(self.path[0]):
+                    aux = self.spath[i][j]
+                    self.spath += weight_data * (self.path[i][j] - self.spath[i][j]) + weight_smooth * (self.spath[i+1][j] + self.spath[i-1][j])
+                    
+                    if i >= 2:
+                        self.spath[i][j] += (1/2)* weight_smooth*(2*self.spath[i-1][j] - self.spath[i-2][j] - self.spath[i][j])
+                    
+                    if i < len(self.path)-3:
+                        self.spath[i][j] += (1/2) * weight_smooth* (2 * self.spath[i+1][j] - self.spath[i+2][j] - self.spath[i][j])
+                    
+                    error += abs(aux - self.spath[i][j])
+
+
+
+
+
+
+
+
 class Robot:
     def __init__(self):
         self.x = 0
@@ -88,6 +201,8 @@ class Robot:
 
         return prob
 
+class particles:
+    
 
 def Astar_search(grid, init, goal):
 
