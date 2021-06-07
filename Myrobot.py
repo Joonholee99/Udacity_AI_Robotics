@@ -202,6 +202,87 @@ class Robot:
         return prob
 
 class particles:
+
+    def __init__(self, x, y, theta, steering_noise, distance_noise, measurement_noise, N=100):
+        self.N = N
+        self.steering_noise = steering_noise
+        self.distance_noise = distance_noise
+        self.measurement_noise = measurement_noise
+
+        self.data = []
+        for i in range(self.N):
+            r = Robot()
+            r.set(x,y,theta)
+            r.set_noise(steering_noise, distance_noise, measurement_noise)
+            self.data.append(r)
+
+    def get_position(self):
+        x = 0
+        y = 0
+        orientation = 0
+
+        for i in range(self.N):
+            x += self.data[i].x
+            y += self.data[i].y
+            orientation += (((self.data[i].orientation
+                              - self.data[0].orientation + math.pi) % (2.0 * math.pi)) 
+                            + self.data[0].orientation - math.pi)
+            
+        return [x/self.N, y/self.N, orientation/self.N]
+
+    def move(self, grid, steer, speed):
+        newdata=[]
+
+        for i in range(self.N):
+            r = self.data[i].move(grid, steer, speed)
+            newdata.append(r)
+        
+        self.data = newdata
+
+    def sense(self, Z):
+        w = []
+        for i in range(self.N):
+            w.append(self.data[i].measurement_prob(Z))
+
+        p3 = []
+        index = int(random.random() * self.N)
+        beta = 0.0
+        mw = max(w)
+
+        for i in range(self.N):
+            beta += random.random() * 2.0 * mw
+            while beta > w[index]:
+                beta -= w[index]
+                index = (index + 1) % self.N
+            p3.append(self.data[index])
+        self.data = p3        
+
+
+def run(grid, goal, spath, params, printflag = False, speed = 0.1, timeout = 1000):
+    myrobot = Robot()
+    myrobot.set(0,0,0)
+    myrobot.set_noise(steering_noise, distance_noise, measurement_noise)
+    filter = particles(myrobot.x, myrobot.y, myrobot.orientation, steering_noise, distance_noise, measurement_noise)
+    cte = 0
+    err = 0
+    N = 0
+
+    index = 0
+
+    while not myrobot.check_goal(goal) and N < timeout:
+        diff_cte = -cte
+
+        estimate = filter.get_position()
+
+        dx = spath[index+1][0] - spath[index][0]
+        dy = spath[index+1][1] - spath[index][1]
+        drx = estimate
+
+
+
+
+
+
     
 
 def Astar_search(grid, init, goal):
